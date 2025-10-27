@@ -1,4 +1,4 @@
-from c_analex import lexer 
+from c_analex import lexer
 
 prox_simb = ('Erro', '', 0, 0)
 
@@ -8,26 +8,31 @@ def parserError(simb):
 def rec_term(simb):
     global prox_simb
     if prox_simb and prox_simb.type == simb:
+        print(f"Consumiu token: {simb} ({prox_simb.value})")
         prox_simb = lexer.token()
     else:
         parserError(prox_simb)
 
-# Gramatica:
-# A → Num B 
-#    | '-' Num B 
-#    | '(' A ')'
-#
-# B → simb A | ε
-
-def rec_B():
+def rec_C():
     global prox_simb
-    if prox_simb and prox_simb.type in ('MAIS', 'MENOS', 'VEZES', 'DIVIDIR'):
-        print(f"B → simb A  (simb = {prox_simb.type})")
+    if prox_simb and prox_simb.type in ('MAIS', 'MENOS'):
+        print(f"C → {prox_simb.type} A")
         simb = prox_simb.type
         rec_term(simb)
         rec_A()
     else:
-        print("B → ε")
+        print("C → ε")
+
+def rec_B():
+    global prox_simb
+    if prox_simb and prox_simb.type in ('VEZES', 'DIVIDIR'):
+        print(f"B → {prox_simb.type} A")
+        simb = prox_simb.type
+        rec_term(simb)
+        rec_A()
+    else:
+        print("B → C")
+        rec_C()
 
 def rec_A():
     global prox_simb
@@ -36,21 +41,21 @@ def rec_A():
         rec_term(prox_simb.type)
         rec_B()
 
+    elif prox_simb and prox_simb.type == 'PA':
+        print("A → ( A )")
+        rec_term('PA')
+        rec_A()
+        rec_term('PF')
+        rec_B()
+
     elif prox_simb and prox_simb.type == 'MENOS':
-        print("A → '-' Num B")
+        print("A → - Num B")
         rec_term('MENOS')
         if prox_simb and prox_simb.type in ('NUM', 'FLOAT'):
             rec_term(prox_simb.type)
             rec_B()
         else:
             parserError(prox_simb)
-
-    elif prox_simb and prox_simb.type == 'PA':
-        print("A → '(' A ')'")
-        rec_term('PA')
-        rec_A()
-        rec_term('PF')
-
     else:
         parserError(prox_simb)
 
@@ -58,5 +63,6 @@ def rec_Parser(data):
     global prox_simb
     lexer.input(data)
     prox_simb = lexer.token()
+    print("Início da análise sintática:")
     rec_A()
-
+    print("Análise concluída!")
