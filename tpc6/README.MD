@@ -1,6 +1,19 @@
-Gramatica:
-A → Num B 
-   | '-' Num B 
-   | '(' A ')'
-\n
-B → simb A | ε
+Gramatica com prioridade  
+
+
+A -> Num B 
+   | ( A ) B
+   | - Num B  
+
+
+
+B -> * A
+   | / A
+   | C  
+
+
+
+C -> + A
+   | - A
+   | ε  
+
